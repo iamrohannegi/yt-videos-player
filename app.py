@@ -1,7 +1,9 @@
 import PySimpleGUI as sg 
+from playlist import play_videos
+import multiprocessing 
+from queue import Queue 
 
-
-songs = ["Sample1", "Sample2"]
+songs = []
 
 frame = [
     [sg.T("Video Title")],
@@ -10,12 +12,13 @@ frame = [
 
 tab_1 = [
     [sg.Frame("Currently playing", frame)],
+    [sg.B("Play")]
 ]
 
 table_heading = ["Video Name"]
 
 tab_2_col_1 = [
-    [sg.Table(headings=table_heading, values=songs)],
+    [sg.Table(headings=table_heading, values=songs, key="-TABLE-")],
 ]
 
 tab_2_col_2_frame = [
@@ -42,12 +45,25 @@ layout = [
 
 window = sg.Window("Playlist", layout)
 
-while True:
-    event, values = window.read()
 
-    if event in (sg.WIN_CLOSED, "Exit"):
-        break
-    
-    print(event, values)
+if __name__ == '__main__':
+    proc = None
+    while True:
+        event, values = window.read()
+        print(event, values)
 
-window.close()
+        if event in (sg.WIN_CLOSED, "Exit"):
+            break
+        elif event == "Play":
+            proc = multiprocessing.Process(target=play_videos, args=([song[0] for song in songs], ))
+            proc.start()
+        elif event == "Add" and values["-VIDNAME-"]:
+            songs.append([values["-VIDNAME-"]])
+            print(songs)
+            window["-TABLE-"].update(values=songs)
+
+        print(songs)
+
+    if proc and proc.is_alive():
+        proc.terminate()
+    window.close()
