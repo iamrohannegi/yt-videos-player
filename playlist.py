@@ -59,7 +59,7 @@ def play_video(query, autoplay, browser):
     return videoDuration
 
 
-def play_videos(video_titles): 
+def play_videos(video_titles, queue): 
     browser = webdriver.Firefox()
     browser.install_addon('ublock_origin-1.54.0.xpi')
     
@@ -70,7 +70,12 @@ def play_videos(video_titles):
         query = f'{queryText}{video.replace(" ", "+")}'
         wait_time = play_video(query, autoplay, browser)
         autoplay = False
+        queue.put({
+            'title': video,
+            'time': wait_time
+        })
         time.sleep(wait_time)
 
+    browser.close()
 
 
